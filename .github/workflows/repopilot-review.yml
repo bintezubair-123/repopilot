@@ -1,0 +1,84 @@
+name: RepoPilot review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write   # needed to post the review comment
+
+concurrency:
+  group: repopilot-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  # Where to install RepoPilot from. Replace YOUR_USERNAME with the account that hosts it.
+  # (Inside the RepoPilot repo itself, use "." instead.)
+  REPOPILOT_PIP_SPEC: "git+https://github.com/YOUR_USERNAME/repopilot.git@main"
+  # Optional repo variable (Settings > Secrets and variables > Actions > Variables).
+  LLM_MODEL: ${{ vars.LLM_MODEL || 'gemini/gemini-2.5-flash' }}
+  MAX_DIFF_CHARS: "24000"
+
+jobs:
+  review:
+    # Same-repo PRs only: PRs from forks get no secrets and a read-only token.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so the diff against the base branch works
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip downloads and the embedding model
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/huggingface
+          key: repopilot-deps-${{ runner.os }}-v1
+
+      - name: Install RepoPilot (CPU-only PyTorch keeps the install small)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install "$REPOPILOT_PIP_SPEC"
+
+      - name: Restore index cache
+        id: index-cache
+        uses: actions/cache@v4
+        with:
+          path: .repopilot/chroma
+          key: repopilot-index-v1-${{ hashFiles('**/*.py', '**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx', '**/*.md') }}
+
+      - name: Build index (only when the code changed since the last cached index)
+        if: steps.index-cache.outputs.cache-hit != 'true'
+        run: python -m repopilot index .
+
+      - name: Get PR diff
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git diff --no-color -U5 "origin/${BASE_REF}...HEAD" > pr.diff
+          wc -c pr.diff
+
+      - name: Review and post comment
+        # A flaky free-tier LLM should not put a red X on every PR; check the logs if no comment appears.
+        continue-on-error: true
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ ! -s pr.diff ]; then
+            echo "Empty diff, nothing to review."
+            exit 0
+          fi
+          python -m repopilot review --diff pr.diff --post-comment \
+            --repo "$GITHUB_REPOSITORY" --pr "$PR_NUMBER"

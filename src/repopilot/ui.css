@@ -1,0 +1,176 @@
+:root {
+  --bg: #050505;
+  --surface: rgba(10, 10, 10, 0.85);
+  --border: rgba(255, 255, 255, 0.10);
+  --text: #ffffff;
+  --text-muted: #b5b5b5;
+  --accent: #ff8a1f;
+  --accent-strong: #f26a0a;
+  --accent-glow: #ffb020;
+  --accent-gradient: linear-gradient(135deg, #ff8a1f, #f26a0a);
+  --glow-shadow: 0 0 30px rgba(255, 138, 31, 0.35);
+}
+
+.stApp {
+  color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(255, 138, 31, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 138, 31, 0.035) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 105%, rgba(242, 106, 10, 0.17), transparent 55%),
+    radial-gradient(ellipse at 50% 115%, rgba(255, 176, 32, 0.10), transparent 38%);
+  background-size: 80px 80px, 80px 80px, auto, auto;
+  background-attachment: fixed;
+}
+
+.stApp,
+.stApp button,
+.stApp input,
+.stApp textarea {
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+.main .block-container {
+  max-width: 1440px;
+  padding-top: 3rem;
+  padding-bottom: 4rem;
+  animation: rise-in 420ms ease-out both;
+}
+
+[data-testid="stSidebar"] {
+  background: rgba(8, 8, 8, 0.92);
+  border-right: 1px solid var(--border);
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] {
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(12px);
+  animation: rise-in 480ms ease-out both;
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"]:nth-of-type(2) {
+  animation-delay: 70ms;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"]:nth-of-type(3) {
+  animation-delay: 140ms;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"]:hover {
+  border-color: rgba(255, 138, 31, 0.28);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.04), 0 0 24px rgba(255, 138, 31, 0.07);
+}
+
+.stApp h1,
+.stApp h2,
+.stApp h3 {
+  color: var(--text);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+}
+
+.stApp p,
+.stApp [data-testid="stCaptionContainer"] {
+  color: var(--text-muted);
+}
+
+.stApp button {
+  min-height: 2.6rem;
+  border: 1px solid rgba(255, 138, 31, 0.28);
+  border-radius: 9999px;
+  background: rgba(20, 16, 12, 0.9);
+  color: var(--text);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.stApp button:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  box-shadow: 0 0 18px rgba(255, 138, 31, 0.20);
+}
+
+.stApp button:active {
+  transform: translateY(0);
+}
+
+.stApp button[kind="primary"] {
+  border-color: transparent;
+  background: var(--accent-gradient);
+  color: #160b02;
+  font-weight: 700;
+  box-shadow: var(--glow-shadow);
+}
+
+.stApp button[kind="primary"]:hover {
+  background: linear-gradient(135deg, var(--accent-glow), var(--accent));
+  box-shadow: 0 0 34px rgba(255, 138, 31, 0.55);
+}
+
+.stApp :focus-visible {
+  outline: 2px solid var(--accent-glow) !important;
+  outline-offset: 3px;
+}
+
+.stApp input,
+.stApp textarea,
+.stApp [data-baseweb="select"] > div {
+  border-color: var(--border);
+  border-radius: 14px;
+  background-color: rgba(8, 8, 8, 0.9);
+}
+
+.stApp input:focus,
+.stApp textarea:focus,
+.stApp [data-baseweb="select"]:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 138, 31, 0.22);
+}
+
+.stApp [data-testid="stExpander"] {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(10, 10, 10, 0.72);
+}
+
+.stApp code,
+.stApp pre {
+  border-color: var(--border);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .main .block-container {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  [data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
